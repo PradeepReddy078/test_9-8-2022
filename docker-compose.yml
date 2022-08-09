@@ -1,0 +1,46 @@
+
+version: "3.8"
+networks:
+  pms_net:
+    driver: bridge
+    ipam:
+      driver: default
+      config: 
+        - subnet:  192.28.0.0/16
+          gateway: 192.28.0.1
+services:   
+  jenkins:
+    container_name: jenkins
+    image: electrumlocaltesting/jenkins_maven
+    user: root
+    volumes: 
+      - "./test-qa/docker-volumes/jenkins:/var/jenkins_home"
+    environment:
+      JENKINS_ADMIN_ID: admin
+      JENKINS_ADMIN_PASSWORD: admin
+      
+    ports:
+      - "8082:8080"
+    restart: always
+    networks:
+      pms_net:
+        ipv4_address: "192.28.0.3"
+
+  node_server:
+    container_name: node_server     
+    image: electrumlocaltesting/node_server:v1
+    user: root
+    ports:
+      - '24:22'
+    volumes:
+      - ./test-qa/docker-volumes/node_home:/home/ubuntu/pms
+    depends_on:
+      - jenkins
+    networks:
+      pms_net: 
+        ipv4_address: "192.28.0.2"
+
+
+
+
+
